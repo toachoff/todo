@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #40405C;
+            font-family: 'Jura', sans-serif;
+            color: #DEDEDE;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            width: 100%;
+            height: 150px;
+            background-color: #666689;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            z-index: 1;
+        }
+        .todo {
+            font-size: 128px;
+            text-align: center;
+            text-shadow: 
+                -3px -3px 0 #40405C,
+                3px -3px 0 #40405C,
+                -3px 3px 0 #40405C,
+                3px 3px 0 #40405C;
+            letter-spacing: -0.2em;
+            margin: 0;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: calc(100vh - 150px);
+            padding-top: 30px;
+            box-sizing: border-box;
+            flex-direction: column;
+        }
+        .button {
+            width: 200px;
+            height: 100px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #DEDEDE;
+            text-shadow: 
+                -1px -1px 0 #40405C,
+                1px -1px 0 #40405C,
+                -1px 1px 0 #40405C,
+                1px 1px 0 #40405C;
+        }
+        .input-container {
+            display: none;
+            gap: 10px;
+            padding-top: 20px;
+            flex-direction: column;
+            align-items: center;
+        }
+        .input-task {
+            width: 200px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            word-wrap: break-word; /* Позволяет переносить длинные слова */
+            overflow-wrap: break-word; /* Позволяет переносить длинные слова */
+            word-break: break-all; /* Принудительно переносит текст, если нет пробелов */
+        }
+        .input-task:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        .input-label {
+            font-size: 20px;
+            color: #DEDEDE;
+            margin-bottom: 10px;
+        }
+        .sidebar {
+            width: 300px;
+            background-color: #666689;
+            opacity: 0.8;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: calc(100vh - 250px);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            position: fixed;
+            left: 0;
+            top: 200px;
+            overflow-y: auto;
+        }
+        .task {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 20px;
+            overflow: hidden;
+            position: relative; /* Для размещения кнопки удаления */
+            min-width: 280px;
+        }
+        .task-text {
+            flex: 1; /* Заставляем текст занимать оставшееся пространство */
+            margin-right: 10px; /* Отступ справа для расстояния от текста */
+            white-space: normal; /* Разрешаем перенос строк */
+            overflow-wrap: break-word; /* Переносим длинные слова */
+            word-wrap: break-word; /* Переносим длинные слова */
+            word-break: break-all; /* Переносим текст без пробелов */
+        }
+        .task-date {
+            font-size: 18px;
+            color: #BBBBBB;
+            margin-right: 10px;
+            text-align: center;
+            flex-shrink: 0; /* Запрещаем сжать элемент */
+            min-width: 60px; /* Минимальная ширина для даты */
+        }
+        .delete-button {
+            background-color: rgba(255, 0, 0, 0.7);
+            border-radius: 50px;
+            border: none;
+            color: #FFFFFF;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px 15px;
+            flex-shrink: 0; /* Запрещаем сжать кнопку */
+            text-shadow: 
+                -1px -1px 0 #40405C,
+                1px -1px 0 #40405C,
+                -1px 1px 0 #40405C,
+                1px 1px 0 #40405C;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <div class="todo">ToDo</div>
+    </div>
+    <div class="button-container">
+        <button class="button" id="addButton">Add</button>
+        <div class="input-container" id="inputContainer">
+            <label class="input-label">Введите задачу</label>
+            <input type="text" class="input-task" id="taskInput">
+        </div>
+    </div>
+    <div class="sidebar">
+        <h2>Задачи на сегодня</h2>
+        <div id="taskList"></div>
+    </div>
+
+    <script>
+        document.getElementById('addButton').addEventListener('click', function() {
+            const inputContainer = document.getElementById('inputContainer');
+            inputContainer.style.display = 'flex'; // Показываем поле ввода
+            const taskInput = document.getElementById('taskInput');
+
+            if (taskInput.value) {
+                const taskList = document.getElementById('taskList');
+                const taskItem = document.createElement('div');
+                const taskDate = new Date().toLocaleDateString(); // Получаем текущую дату
+
+                taskItem.classList.add('task');
+                taskItem.innerHTML = `
+                    <span class="task-text">${taskInput.value}</span>
+                    <span class="task-date">${taskDate}</span>
+                    <button class="delete-button">Удалить</button>
+                `;
+                
+                // Добавляем обработчик события на кнопку удаления
+                taskItem.querySelector('.delete-button').addEventListener('click', function() {
+                    taskList.removeChild(taskItem);
+                });
+
+                taskList.appendChild(taskItem);
+                taskInput.value = ''; // Очищаем поле ввода
+            }
+        });
+    </script>
+</body>
+</html>
